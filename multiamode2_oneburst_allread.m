@@ -15,7 +15,7 @@ for medium_angle_current = medium_angle
     
     % 1) Create the computational grid ------------------------------------
     
-    Nx = 768;        % number of grid points in the x (row) direction
+    Nx = 512;        % number of grid points in the x (row) direction
     Ny = 1024;       % number of grid points in the y (column) direction
     dx = 0.025e-3;   % grid point spacing in the x direction [m]
     dy = dx;         % grid point spacing in the y direction [m]
@@ -198,6 +198,7 @@ for medium_angle_current = medium_angle
         if(display_fig)
             f1 = figure("Name", "Ultrasound Signal");
             for i=1:n_element
+
                 subplot(n_element, 1, i);
                 plot(USRaw_dvector, transducers(i).signal_corr);
                 xlabel(sprintf('Depth (mm), 1-trip, v=%d m/s', c1));
@@ -208,13 +209,14 @@ for medium_angle_current = medium_angle
                     str_title = strcat(str_title, ' (Emits)');
                 end
                 title(str_title);
-                
+
                 grid on; axis tight; hold on;
                 plot(USRaw_dvector, transducers(i).signal_env, '-g', 'LineWidth', 1);
                 plot(transducers(i).signal_peak.loc_mm, transducers(i).signal_peak.amp, 'or', 'MarkerFaceColor', 'r');
                 text(transducers(i).signal_peak.loc_mm, transducers(i).signal_peak.amp, ...
                      strcat('$\,\leftarrow$', sprintf('%.2f', transducers(i).signal_peak.loc_mm)), 'Interpreter', 'latex');
                 ylim([-2e5 2e5]);
+
             end
 
             % save figure
@@ -255,8 +257,12 @@ for medium_angle_current = medium_angle
 
         close all;
 
+        break;
+
     % end element within transducer
     end
+
+    break;
 
 % end angle
 end
