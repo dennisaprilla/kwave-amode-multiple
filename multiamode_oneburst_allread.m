@@ -25,7 +25,7 @@ for medium_angle_current = medium_angle
     
     % define the properties of the propagation medium
     angle    = medium_angle_current; % [deg]
-    position = medium_depth; % [m]
+    position = medium_depth;         % [m]
     medium_logic = makemedium_v2(angle, [Nx, Ny], dx, position);
     
     c1 = 1540; % [m/s]
@@ -120,7 +120,7 @@ for medium_angle_current = medium_angle
         movieargs     = {'FrameRate', 12};
 
         % run the simulation
-        input_args    = {'RecordMovie', true, 'MovieName', str_moviepath, 'MovieArgs', movieargs};
+        input_args    = {'RecordMovie', record_mov, 'MovieName', str_moviepath, 'MovieArgs', movieargs};
         sensor_data   = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
         
         % reorganize the data
@@ -195,7 +195,7 @@ for medium_angle_current = medium_angle
         
         %% Visualizaton
         
-        if(display)
+        if(display_fig)
             f1 = figure("Name", "Ultrasound Signal");
             for i=1:n_element
                 subplot(n_element, 1, i);
@@ -241,7 +241,6 @@ for medium_angle_current = medium_angle
             str_figurename = sprintf('figVMed_%s_%s', num2str(medium_angle_current, '%+03.f'), num2str(idx_tx));
             str_figurepath = fullfile(pwd, 'sim_results', str_figurename);
             saveas(f2, str_figurepath);
-
         end
 
         str_matname = sprintf('signal_%s_%s', num2str(medium_angle_current, '%+03.f'), num2str(idx_tx));
