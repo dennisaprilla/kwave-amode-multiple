@@ -4,7 +4,8 @@ clearvars;
 simconfig = ini2struct('simconf.ini');
 
 medium_angle    = str2double(simconfig.medium_anglemin):str2double(simconfig.medium_anglestep):str2double(simconfig.medium_anglemax); % [deg]
-medium_depth    = str2double(simconfig.medium_depth);     % [m]
+medium_depth1   = str2double(simconfig.medium_depth1);    % [m]
+medium_depth2   = str2double(simconfig.medium_depth2);    % [m]
 transducers_pos = str2double(simconfig.transducers_pos);  % [m]
 transducers_elm = str2double(simconfig.transducers_elm);
 display_fig     = logical(str2double(simconfig.display_fig));
@@ -15,7 +16,7 @@ for medium_angle_current = medium_angle
     
     % 1) Create the computational grid ------------------------------------
     
-    Nx = 512;        % number of grid points in the x (row) direction
+    Nx = 768;        % number of grid points in the x (row) direction
     Ny = 1024;       % number of grid points in the y (column) direction
     dx = 0.025e-3;   % grid point spacing in the x direction [m]
     dy = dx;         % grid point spacing in the y direction [m]
@@ -23,33 +24,46 @@ for medium_angle_current = medium_angle
     
     % 2) Create medium ----------------------------------------------------
     
-    % define the properties of the propagation medium
-    angle    = medium_angle_current; % [deg]
-    position = medium_depth;         % [m]
-    medium_logic = makemedium_v2(angle, [Nx, Ny], dx, position);
+    % define the properties of the propagation medium1
+    angle1    = medium_angle_current; % [deg]
+    position1 = medium_depth1;         % [m]
+    medium1_logic = makemedium_v2(angle1, [Nx, Ny], dx, position1);
+    % define the properties of the propagation medium2
+    angle2    = angle1;               % [deg]
+    position2 = medium_depth2;         % [m]
+    medium2_logic = makemedium_v2(angle2, [Nx, Ny], dx, position2);
+    % add the two medium together
+    medium_logic = medium1_logic+medium2_logic;
     
-    c1 = 1540; % [m/s]
-    c2 = 3500; % [m/s]
-    d1 = 1049; % [kg/m^3]
-    d2 = 1908; % [kg/m^3]
-    a1 = 0.54; % [dB/(MHz^y cm]
-    a2 = 6.90; % [dB/(MHz^y cm]
+    c0 = 1540; % soft   [m/s]
+    c1 = 1440; % fat    [m/s]
+    c2 = 1588; % muscle [m/s]
+    c3 = 3514; % bone   [m/s]
+    d1 = 911;  % fat    [kg/m^3]
+    d2 = 1090; % muscle [kg/m^3]
+    d3 = 1908; % bone   [kg/m^3]
+    a1 = 0.48; % fat    [dB/(MHz^y cm]
+    a2 = 1.09; % muscle [dB/(MHz^y cm]
+    a3 = 7.38; % bone   [dB/(MHz^y cm]
     
-    speed1   = c1 * medium_logic;       
-    speed2   = c2 * (medium_logic==0);
-    density1 = d1 * medium_logic;      
-    density2 = d2 * (medium_logic==0); 
-    alpha1   = a1 * medium_logic;
-    alpha2   = a2 * (medium_logic==0); 
+    speed1   = c1 * (medium_logic==2);
+    speed2   = c2 * (medium_logic==1);
+    speed3   = c3 * (medium_logic==0);
+    density1 = d1 * (medium_logic==2);
+    density2 = d2 * (medium_logic==1);
+    density3 = d3 * (medium_logic==0);
+    alpha1   = a1 * (medium_logic==2);
+    alpha2   = a2 * (medium_logic==1);
+    alpha3   = a3 * (medium_logic==0);
     
-    medium.sound_speed = speed1 + speed2;      
-    medium.density     = density1 + density2;      
-    medium.alpha_coeff = alpha1 + alpha2;
+    medium.sound_speed = speed1 + speed2 + speed3;      
+    medium.density     = density1 + density2 + density3;      
+    medium.alpha_coeff = alpha1 + alpha2 + alpha3;
     medium.alpha_power = 1.1;
     
     % create the time array
     % kgrid.makeTime(medium.sound_speed);
-    kgrid.makeTime(medium.sound_speed,  [], 15e-6);
+    kgrid.makeTime(medium.sound_speed,  [], 18e-6);
     
     % 3) Create transducer and sensor -------------------------------------
     
@@ -65,8 +79,8 @@ for medium_angle_current = medium_angle
     
     % spesification of transducer
     line_center_m  = -[transducers_pos 0]; % [m]
-    line_length_m  = 6e-3;                % [m]
-    line_kerf_m    = 2e-3;                % [m]
+    line_length_m  = 6e-3;                 % [m]
+    line_kerf_m    = 2e-3;                 % [m]
     
     % specification in term of grids
     line_center_grid     = [(Nx/2), Ny/2] + round(line_center_m/dx); % [grid]
@@ -139,7 +153,7 @@ for medium_angle_current = medium_angle
         USRaw_signalfreq = 1/kgrid.dt;  % [Hz]
         USRaw_samplefreq = kgrid.dt;    % [s]
         USRaw_tvector    = kgrid.t_array * t_scale; % [mus]
-        USRaw_dvector    = (kgrid.t_array * c1) * 1e3 / 2; % [mm]
+        USRaw_dvector    = (kgrid.t_array * c0) * 1e3 / 2; % [mm]
         
         USBurst_data       = source.p;
         USBurst_signalfreq = signal_freq; % [Hz]
@@ -177,7 +191,7 @@ for medium_angle_current = medium_angle
         
             locs_idx = locs(1)+offset;
             locs_t   = locs_idx*(kgrid.dt*1e6);
-            locs_mm  = (c1 * 1e3) * (locs_t*1e-6) / 2;
+            locs_mm  = (c0 * 1e3) * (locs_t*1e-6) / 2;
         
             my_peaks = peaks(1);
         
@@ -201,7 +215,7 @@ for medium_angle_current = medium_angle
 
                 subplot(n_element, 1, i);
                 plot(USRaw_dvector, transducers(i).signal_corr);
-                xlabel(sprintf('Depth (mm), 1-trip, v=%d m/s', c1));
+                xlabel(sprintf('Depth (mm), 1-trip, v=%d m/s', c0));
                 ylabel('Amplitude');
 
                 str_title = sprintf('US element-%d', i);
@@ -243,7 +257,6 @@ for medium_angle_current = medium_angle
             c.Label.String = 'dB/(MHz cm)';
             c.Label.Interpreter = 'latex';
             title('Attenuation');
-            colormap('gray');
 
             % save figure
             str_figurename = sprintf('figVMed_%s_%s', num2str(medium_angle_current, '%+03.f'), num2str(idx_tx));
@@ -263,7 +276,7 @@ for medium_angle_current = medium_angle
     end
 
     break;
-
+    
 % end angle
 end
 

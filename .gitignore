@@ -1,4 +1,8 @@
 simconf.ini
+dibuangsayang/*
 *.fig
 *.mat
 *.avi
+*.rar
+*.png
+*.asv
