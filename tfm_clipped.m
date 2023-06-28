@@ -11,6 +11,10 @@
 % 2) https://www.eddyfi.com/en/technology/total-focusing-method-tfm
 % 3) https://themysticwaves.com/total-focusing-method/
 
+% NOTE: The difference between tfm_clipped (this script) and tfm_original
+% is that this script has some modification on the tfm algorithm, that is,
+% each of the transdcuer is represented by multiple points.
+
 clear; clc; close all;
 
 % load simulation environment data
