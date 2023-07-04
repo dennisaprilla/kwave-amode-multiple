@@ -79,7 +79,7 @@ pixel_res       = 0.1 * 1e-3;
 
 % Define focus area
 minmax_x        = [-0.010, 0.010];
-minmax_z        = [0.005, -0.010]; % a-mode start from up to down
+minmax_z        = [0.002, -0.008]; % a-mode start from up to down
 
 % Make a range from the specified res within the focus area
 x_range         = (minmax_x(1):pixel_res:minmax_x(2))';
@@ -191,8 +191,8 @@ image_processed2 = normalize(abs(image));
 fig = figure();
 ax = axes(fig);
 
-imagesc(ax, x_range*1000, -z_range*1000, image_processed1);
-title(ax, 'Reconstructed image by discrete-TFM');
+imagesc(ax, x_range*1000, -z_range*1000, image_processed2);
+title(ax, 'Reconstructed image by original-TFM', 'Interpreter','latex');
 xlabel(ax, 'X (mm)', 'Interpreter','latex');
 ylabel(ax, 'Depth (mm)', 'Interpreter','latex');
 hold(ax, 'on'); 

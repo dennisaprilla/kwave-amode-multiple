@@ -20,7 +20,7 @@ clear transducers;
 
 %%
 
-select_idx   = 3;
+select_idx   = 5;
 select_theta = theta(select_idx);
 
 % select_data is a [M,N] matrix, M-> Tx, N-> Rx

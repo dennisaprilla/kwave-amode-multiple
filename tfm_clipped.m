@@ -39,7 +39,7 @@ end
 clear transducers str_matname str_matpath;
 
 % [0, 2.5, 5, 7.5, 10, 12.5, 15] degree;
-select_idx = 7; 
+select_idx = 3; 
 
 % FMC_singalall is a [n_Tx, n_Rx] matrix
 FMC_singalall = cat(1, all_data{select_idx, tx_idcs});
@@ -111,7 +111,7 @@ pixel_res       = 0.1 * 1e-3;
 
 % Define focus area
 minmax_x        = [-0.010, 0.010];
-minmax_z        = [-0.002, -0.008]; % a-mode start from up to down
+minmax_z        = [0.0020, -0.008]; % a-mode start from up to down
 
 % Make a range from the specified res within the focus area
 x_range         = (minmax_x(1):pixel_res:minmax_x(2))';
