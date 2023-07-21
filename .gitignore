@@ -1,5 +1,7 @@
 simconf.ini
 dibuangsayang/*
+sim_results/*
+tfm_results/*
 *.fig
 *.mat
 *.avi

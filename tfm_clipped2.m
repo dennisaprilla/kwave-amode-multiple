@@ -15,6 +15,11 @@
 % is that this script has some modification on the tfm algorithm, that is,
 % each of the transdcuer is represented by multiple points.
 
+% NOTE2: tfm_clipped2 (this script) is 99% the same to tfm_clipped, the
+% only difference is only the display. The purpose of this script is to
+% look at what happen if we play with the number of points which represent
+% a single transducer.
+
 clear; clc; close all;
 
 % load simulation environment data
@@ -39,7 +44,7 @@ end
 clear transducers str_matname str_matpath;
 
 % [0, 2.5, 5, 7.5, 10, 12.5, 15] degree;
-select_idx = 7;
+select_idx = 5;
 
 % FMC_singalall is a [n_Tx, n_Rx] matrix
 FMC_singalall = cat(1, all_data{select_idx, tx_idcs});
@@ -71,7 +76,7 @@ transducer_cfg.numsamples    = kgrid.Nt;
 % This make sure that the "circular effect" from the picture reduced.
 
 % Resolution of the point gap within one transducer
-transducer_res = 0.05 * 1e-3;
+transducer_res = 2 * 1e-3;
 
 % Make x-points with the length of the width of single transducer, then
 % replicate it to the number of the transducers. For ex:
@@ -194,6 +199,11 @@ linear_idcs_correction = linear_idcs_correction(:)';
 % If we have [M,N] grid, this "linear image" will be the length of MxN.
 linear_image = zeros(size(matrix_idcs, 1), 1);
 
+% let's allocate another variable which will store also our "image". But
+% this one will store each group of transducers.
+linear_images = zeros(size(matrix_idcs, 1), transducer_cfg.element.n);
+img_idx       = 1;
+
 % This is matlab-efficient implementation of TFM, please check this link:
 % https://nl.mathworks.com/matlabcentral/fileexchange/56971-total-focusing-method
 % Since we are modelling the transducer as multiple points, the script is 
@@ -202,7 +212,8 @@ linear_image = zeros(size(matrix_idcs, 1), 1);
 for i=1:size(transducer_cfg.coordinates,1)
     
     % Get the "image"
-    IMG     = FMC_signal(:,:,x_idcs(i));
+    IMG         = FMC_signal(:,:,x_idcs(i));
+    IMG_h       = [hilbert(IMG(:,1)), hilbert(IMG(:,2)), hilbert(IMG(:,3))];
 
     % Calculate delay
     Tx_Rx = bsxfun(@plus, matrix_idcs, matrix_idcs(:,i));
@@ -220,9 +231,13 @@ for i=1:size(transducer_cfg.coordinates,1)
     % to add more amplitudes from the next Tx). Here, we should expect
     % un-synchronized amplitude, will cancel each other.
     linear_image = linear_image + sum(TMP, 2);
+
+    % test
+    linear_images(:,img_idx) = linear_images(:,img_idx) + sum(TMP, 2);
+    if(mod(i, size(tmp_x, 1))==0) img_idx = img_idx+1; end
 end
 
-%% Display
+%% Display 1
 
 % reshape the linear image to actual dimension of image
 image = reshape(linear_image, [length(z_range),length(x_range)]);
@@ -233,8 +248,8 @@ image_processed1 = 20*log10(normalize(abs(image)));
 image_processed2 = normalize(abs(image));
 
 % display
-fig = figure();
-ax = axes(fig);
+fig1 = figure();
+ax = axes(fig1);
 
 imagesc(ax, x_range*1000, -z_range*1000, image_processed2);
 title(ax, 'Reconstructed image by discrete-TFM', 'Interpreter','latex');
@@ -256,3 +271,44 @@ set(c,'TickLabelInterpreter','latex')
 fontsize(ax, 14, "points");
 set(gca,'TickLabelInterpreter','latex');
 
+%% Display 2
+
+images = reshape(linear_images, [length(z_range),length(x_range),transducer_cfg.element.n]);
+
+% post process the image
+normalize = @(x) x./max(x(:));
+
+% display
+fig2 = figure();
+tl2  = tiledlayout(fig2, 1, transducer_cfg.element.n);
+
+for i=1:transducer_cfg.element.n
+    % process the current image
+    image_processed1 = abs(images(:,:,i));
+    image_processed2 = normalize(abs(images(:,:,i)));
+
+    ax = nexttile(tl2, i);
+    imagesc(ax, x_range*1000, -z_range*1000, image_processed2);
+    xlabel(ax, 'X (mm)', 'Interpreter','latex');
+    ylabel(ax, 'Depth (mm)', 'Interpreter','latex');
+    hold(ax, 'on'); 
+    axis(ax, 'equal');
+    axis(ax, 'tight');
+    grid(ax, 'on');
+    grid(ax, 'minor');
+    plot(ax, transducer_cfg.coordinates(:,1)* 1000, -transducer_cfg.coordinates(:,2)* 1000, 'or');
+    
+    fontsize(ax, 14, "points");
+    set(gca,'TickLabelInterpreter','latex');
+end
+
+
+title(tl2, 'Reconstructed image by discrete-TFM', 'Interpreter','latex');
+
+c = colorbar;
+c.Label.String = 'Normalized Amplitude';
+c.Label.Rotation = 270;
+c.Label.VerticalAlignment = "bottom";
+c.Label.Interpreter = 'latex';
+c.Layout.Tile = 'east';
+set(c,'TickLabelInterpreter','latex');

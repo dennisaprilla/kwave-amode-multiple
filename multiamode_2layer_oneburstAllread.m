@@ -17,9 +17,9 @@ for medium_angle_current = medium_angle
     % 1) Create the computational grid ------------------------------------
     
     Nx = 768;        % number of grid points in the x (row) direction
-    Ny = 1024;       % number of grid points in the y (column) direction
+    Ny = 1024;        % number of grid points in the y (column) direction
     dx = 0.025e-3;   % grid point spacing in the x direction [m]
-    dy = dx;         % grid point spacing in the y direction [m]
+    dy = dx;          % grid point spacing in the y direction [m]
     kgrid = kWaveGrid(Nx, dx, Ny, dy);
     
     % 2) Create medium ----------------------------------------------------
@@ -270,12 +270,12 @@ for medium_angle_current = medium_angle
 
         close all;
 
-        break;
+        % break;
 
     % end element within transducer
     end
 
-    break;
+    % break;
     
 % end angle
 end

@@ -2,7 +2,7 @@ clear; close all;
 
 load('sim_results\supporting_simdata.mat');
 
-theta     = 0:-2.5:-15;
+theta     = 0:-2.5:-20;
 n_element = 3; 
 tx_idcs   = 1:n_element;
 
@@ -20,7 +20,7 @@ clear transducers;
 
 %%
 
-select_idx   = 5;
+select_idx   = 9;
 select_theta = theta(select_idx);
 
 % select_data is a [M,N] matrix, M-> Tx, N-> Rx
